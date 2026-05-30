@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Bonnar Bible — Scott Bonnar Reel Mower Reference</title>
+<meta name="description" content="Scott Bonnar reel mower restoration & reference">
+<meta name="theme-color" content="#1f5c3a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bonnar Bible">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+  :root{
+    --green:#1f5c3a; --green-dark:#15402a; --accent:#c8a13a;
+    --bg:#f4f1e8; --panel:#ffffff; --ink:#21241f; --muted:#6b6f66;
+    --line:#e2ddcf; --hit:#fff3c4;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    font:16px/1.6 "Segoe UI",system-ui,sans-serif;color:var(--ink);
+    background:var(--bg);display:flex;flex-direction:column;
+    height:100vh;height:100dvh;overflow:hidden;
+    -webkit-text-size-adjust:100%;
+  }
+  header{
+    background:var(--green);color:#fff;padding:.7rem 1rem;display:flex;
+    align-items:center;gap:1rem;flex:0 0 auto;box-shadow:0 2px 6px rgba(0,0,0,.2);
+    padding-top:max(.7rem, env(safe-area-inset-top));
+    padding-left:max(1rem, env(safe-area-inset-left));
+    padding-right:max(1rem, env(safe-area-inset-right));
+  }
+  header h1{font-size:1.05rem;margin:0;font-weight:600;letter-spacing:.3px;white-space:nowrap}
+  header h1 small{display:block;font-weight:400;font-size:.72rem;opacity:.8}
+  #search{
+    flex:1;max-width:520px;padding:.5rem .8rem;border:none;border-radius:20px;
+    font-size:.95rem;outline:none
+  }
+  #meta{margin-left:auto;font-size:.72rem;opacity:.8;white-space:nowrap}
+  main{flex:1;display:flex;min-height:0;position:relative}
+  #nav{
+    width:330px;flex:0 0 auto;overflow:auto;background:var(--panel);
+    border-right:1px solid var(--line);padding:.4rem 0;
+    -webkit-overflow-scrolling:touch
+  }
+  #backdrop{
+    position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:4;
+    opacity:0;pointer-events:none;transition:opacity .2s
+  }
+  body.nav-open #backdrop{opacity:1;pointer-events:auto}
+  .chapter>button{
+    width:100%;text-align:left;background:none;border:none;cursor:pointer;
+    font:inherit;font-weight:600;color:var(--green-dark);padding:.5rem .9rem;
+    display:flex;justify-content:space-between;gap:.5rem;border-bottom:1px solid var(--line)
+  }
+  .chapter>button:hover{background:#f0ede2}
+  .chapter .kids{display:none}
+  .chapter.open .kids{display:block}
+  .chapter>button .tw{color:var(--accent);transition:transform .15s}
+  .chapter.open>button .tw{transform:rotate(90deg)}
+  .kids a{
+    display:flex;justify-content:space-between;align-items:baseline;gap:.6rem;
+    text-decoration:none;color:var(--ink);padding:.45rem .9rem .45rem 1.4rem;
+    font-size:.9rem;border-left:3px solid transparent
+  }
+  .kids a.lvl3{padding-left:2.2rem;font-size:.85rem;color:var(--muted)}
+  .kids a:hover{background:#f0ede2}
+  .kids a.active{background:#eef5ef;border-left-color:var(--green);font-weight:600}
+  .kids a .pg{color:var(--muted);font-size:.75rem;flex:0 0 auto}
+  #content{flex:1;min-width:0;overflow:auto;padding:1.4rem 2rem 4rem;-webkit-overflow-scrolling:touch}
+  #content .wrap{max-width:820px;margin:0 auto}
+  .crumb{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  #content h2{color:var(--green-dark);margin:.2rem 0 .1rem;font-size:1.5rem}
+  .pageref{font-size:.8rem;color:var(--muted);margin-bottom:1rem}
+  .body p{margin:0 0 .8rem;white-space:pre-wrap;overflow-wrap:anywhere}
+  mark{background:var(--hit);padding:0 1px}
+  /* search results */
+  #results{padding:.4rem 0}
+  .res{display:block;text-decoration:none;color:inherit;padding:.6rem .9rem;border-bottom:1px solid var(--line)}
+  .res:hover{background:#f0ede2}
+  .res .t{font-weight:600;color:var(--green-dark)}
+  .res .c{font-size:.74rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+  .res .snip{font-size:.85rem;color:var(--muted);margin-top:.2rem}
+  .empty{padding:2rem;color:var(--muted);text-align:center}
+  .hint{color:var(--muted);font-size:.85rem}
+  #menu{display:none;background:none;border:1px solid rgba(255,255,255,.5);color:#fff;border-radius:8px;cursor:pointer;font-size:1.1rem;line-height:1;padding:.35rem .6rem}
+  @media(max-width:760px){
+    header{flex-wrap:wrap}
+    #search{order:3;flex:1 1 100%;max-width:none;margin-top:.55rem}
+    #meta{display:none}
+    header h1{font-size:1rem}
+    header h1 small{display:none}
+    #menu{display:inline-flex}
+    #nav{
+      position:absolute;top:0;left:0;z-index:5;width:86%;max-width:340px;height:100%;
+      box-shadow:4px 0 16px rgba(0,0,0,.25);transform:translateX(-100%);transition:transform .22s ease;
+      padding-bottom:env(safe-area-inset-bottom)
+    }
+    body.nav-open #nav{transform:none}
+    .chapter>button{padding:.7rem .9rem}
+    .kids a{padding:.6rem .9rem .6rem 1.4rem}
+    #content{padding:1.1rem 1.1rem calc(3rem + env(safe-area-inset-bottom))}
+    .res{padding:.8rem .9rem}
+  }
+</style>
+</head>
+<body>
+<header>
+  <button id="menu" title="Menu">☰</button>
+  <h1>The Bonnar Bible<small>Scott Bonnar reel mower reference</small></h1>
+  <input id="search" type="search" placeholder="Search the Bible… (e.g. cutter setting, paint colour, Model 33)" autocomplete="off">
+  <span id="meta"></span>
+</header>
+<main>
+  <aside id="nav"></aside>
+  <section id="content"><div class="wrap"><p class="hint">Loading…</p></div></section>
+  <div id="backdrop"></div>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+let DATA = null, BY_ID = {};
+
+function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+
+function buildNav(){
+  const nav = $('#nav');
+  nav.innerHTML = '';
+  const chapters = [];
+  let cur = null;
+  for(const s of DATA.sections){
+    if(s.level === 1){ cur = {head:s, kids:[]}; chapters.push(cur); }
+    else if(cur){ cur.kids.push(s); }
+    else { cur = {head:s, kids:[]}; chapters.push(cur); }
+  }
+  for(const ch of chapters){
+    const wrap = document.createElement('div');
+    wrap.className = 'chapter';
+    const btn = document.createElement('button');
+    btn.innerHTML = `<span>${esc(ch.head.title)}</span><span class="tw">▶</span>`;
+    btn.onclick = () => {
+      const wasOpen = wrap.classList.contains('open');
+      if(!wasOpen){ show(ch.head.id); }
+      wrap.classList.toggle('open');
+    };
+    wrap.appendChild(btn);
+    const kids = document.createElement('div');
+    kids.className = 'kids';
+    // include the chapter intro itself as first link
+    for(const s of [ch.head, ...ch.kids]){
+      const a = document.createElement('a');
+      a.href = '#' + s.id;
+      a.dataset.id = s.id;
+      if(s.level >= 3) a.className = 'lvl3';
+      const label = s === ch.head ? 'Overview' : s.title;
+      a.innerHTML = `<span class="lbl">${esc(label)}</span><span class="pg">p${s.page}</span>`;
+      kids.appendChild(a);
+    }
+    wrap.appendChild(kids);
+    nav.appendChild(wrap);
+  }
+}
+
+function highlight(text, terms){
+  let out = esc(text);
+  for(const t of terms){
+    if(t.length < 2) continue;
+    out = out.replace(new RegExp('('+t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark>$1</mark>');
+  }
+  return out;
+}
+
+function show(id, terms){
+  const s = BY_ID[id];
+  if(!s) return;
+  // nav active state + open parent chapter
+  document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('active', a.dataset.id===id));
+  const active = document.querySelector('#nav a.active');
+  if(active){ const ch = active.closest('.chapter'); if(ch) ch.classList.add('open'); active.scrollIntoView({block:'nearest'}); }
+  const paras = s.text.split(/\n{2,}/).filter(p=>p.trim());
+  const bodyHtml = paras.map(p=>`<p>${terms?highlight(p,terms):esc(p)}</p>`).join('');
+  $('#content').innerHTML = `<div class="wrap">
+    <div class="crumb">${esc(s.chapter)}</div>
+    <h2>${esc(s.title)}</h2>
+    <div class="pageref">Page ${s.page} of source</div>
+    <div class="body">${bodyHtml || '<p class="hint">(No extractable text on this page — likely a diagram or image. See page '+s.page+' of the PDF.)</p>'}</div>
+  </div>`;
+  $('#content').scrollTop = 0;
+  document.body.classList.remove('nav-open');
+  if(location.hash !== '#'+id) history.replaceState(null,'','#'+id);
+}
+
+function search(q){
+  const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+  const scored = [];
+  for(const s of DATA.sections){
+    const title = s.title.toLowerCase();
+    const text = s.text.toLowerCase();
+    let score = 0;
+    for(const t of terms){
+      if(title.includes(t)) score += 10;
+      const m = text.split(t).length - 1;
+      score += Math.min(m, 8);
+    }
+    if(score > 0) scored.push({s, score});
+  }
+  scored.sort((a,b)=>b.score-a.score);
+  const top = scored.slice(0, 60);
+  if(!top.length){ $('#content').innerHTML = `<div class="empty">No matches for “${esc(q)}”.</div>`; return; }
+  const firstTerm = terms[0];
+  const html = top.map(({s})=>{
+    const i = s.text.toLowerCase().indexOf(firstTerm);
+    let snip = '';
+    if(i>=0){ const a=Math.max(0,i-60); snip = (a>0?'…':'')+s.text.slice(a,i+120).replace(/\n+/g,' ')+'…'; }
+    else { snip = s.text.slice(0,150).replace(/\n+/g,' '); }
+    return `<a class="res" href="#${s.id}" data-id="${s.id}">
+      <div class="c">${esc(s.chapter)} · p${s.page}</div>
+      <div class="t">${highlight(s.title,terms)}</div>
+      <div class="snip">${highlight(snip,terms)}</div></a>`;
+  }).join('');
+  $('#content').innerHTML = `<div class="wrap"><p class="hint">${top.length} result${top.length>1?'s':''} for “${esc(q)}”</p><div id="results">${html}</div></div>`;
+  $('#content').querySelectorAll('.res').forEach(a=>{
+    a.onclick = e => { e.preventDefault(); show(a.dataset.id, terms); };
+  });
+}
+
+function route(){
+  const id = location.hash.slice(1);
+  if(id && BY_ID[id]) show(id);
+  else show(DATA.sections[0].id);
+}
+
+let timer;
+function init(){
+  buildNav();
+  $('#meta').textContent = `${DATA.count} sections · ${DATA.pages} pages`;
+  $('#search').addEventListener('input', e=>{
+    clearTimeout(timer);
+    const q = e.target.value.trim();
+    timer = setTimeout(()=>{ q.length>=2 ? search(q) : route(); }, 150);
+  });
+  $('#menu').onclick = ()=>document.body.classList.toggle('nav-open');
+  $('#backdrop').onclick = ()=>document.body.classList.remove('nav-open');
+  window.addEventListener('hashchange', ()=>{ if(!$('#search').value.trim()) route(); });
+  route();
+}
+
+fetch('data/data.json').then(r=>r.json()).then(d=>{
+  DATA = d; d.sections.forEach(s=>BY_ID[s.id]=s); init();
+}).catch(err=>{
+  $('#content').innerHTML = `<div class="empty">Couldn't load data.json.<br><span class="hint">Serve this folder over HTTP (e.g. <code>python -m http.server</code>) rather than opening the file directly.</span></div>`;
+  console.error(err);
+});
+
+// PWA: register service worker for offline / installable app behaviour
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(e=>console.warn('SW registration failed', e));
+  });
+}
+</script>
+</body>
+</html>
